@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+
+  # База данных PostgreSQL
+  postgres:
+    container_name: postgres
+    image: postgres:16-alpine
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+    # NestJS приложение
+  app:
+    container_name: app
+    build: .
+    env_file:
+      - .env
+    environment:
+      POSTGRES_HOST: postgres
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: npm run start:dev
+    depends_on:
+      - postgres
+    restart: always
+volumes:
+  postgres_data:
